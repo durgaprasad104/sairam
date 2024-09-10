@@ -95,20 +95,8 @@
         return;
       }
 
-      // Assuming payment is successful for demonstration purposes
-      let paymentStatus = "Success";
-
       // Construct the URL to call the Google Apps Script
-      const url = `https://docs.google.com/spreadsheets/d/1syNquAF1mfwaNCzq1bss1aC1aoGmJlct9iz84T8Esoc/exec?name=${name}&date=${date}&upiApp=${app}&status=${paymentStatus}`;
-      
-      // Send the data to Google Sheets
-      fetch(url)
-        .then(response => response.text())
-        .then(data => {
-          console.log("Payment data recorded:", data);
-          alert("Payment data has been saved successfully!");
-        })
-        .catch(error => console.error('Error:', error));
+      const url = `https://script.google.com/macros/s/AKfycbwzrJAqfwugYR3kucWX0q57u10YrOcpMtrBOdlE5T2r-9gpZ81QCnQAL_WMqg9wQoTIbA/exec?name=${encodeURIComponent(name)}&date=${encodeURIComponent(date)}&upiApp=${encodeURIComponent(app)}&status=Pending&timestamp=${new Date().toISOString()}`;
 
       // Redirect to UPI payment URL for actual payment
       let upiURL = "";
@@ -117,15 +105,27 @@
           upiURL = "upi://pay?pa=yourUPIID@bank&pn=YourMerchantName&am=50.00&cu=INR";
           break;
         case "phonepe":
-          upiURL = "upi://pay?pa=9553950479-3@ybl&pn=YourMerchantName&am=5.00&cu=INR";
+          upiURL = "upi://pay?pa=9553950479-3@ybl&pn=DurgaPrasad&am=5.00&cu=INR";
           break;
         case "paytm":
           upiURL = "upi://pay?pa=yourUPIID@bank&pn=YourMerchantName&am=50.00&cu=INR";
           break;
       }
 
-      // Redirect to UPI payment
+      // Open UPI app
       window.location.href = upiURL;
+
+      // Set a timeout to simulate checking for payment confirmation
+      setTimeout(() => {
+        // Send a follow-up request to update payment status
+        fetch(url.replace('status=Pending', 'status=Completed'))
+          .then(response => response.text())
+          .then(data => {
+            console.log("Payment data updated:", data);
+            alert("Payment status updated successfully!");
+          })
+          .catch(error => console.error('Error:', error));
+      }, 5000); // Adjust timeout if necessary
     }
   </script>
 </body>
