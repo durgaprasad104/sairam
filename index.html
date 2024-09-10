@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(to right, #00c6ff, #0072ff);
+    }
+
+    #paymentForm {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      width: 320px;
+      animation: fadeIn 1.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    h2, h3 {
+      color: #333;
+    }
+
+    input[type="text"], input[type="date"] {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .upi-logo {
+      margin: 10px;
+      width: 60px;
+      height: 60px;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .upi-logo:hover {
+      transform: scale(1.2);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      animation: pulse 0.6s infinite alternate;
+    }
+
+    @keyframes pulse {
+      to {
+        transform: scale(1.15);
+      }
+    }
+
+    #upiContainer {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <form id="paymentForm">
+    <h2>Enter Your Details</h2>
+    
+    <label for="name">Enter Your Name:</label><br>
+    <input type="text" id="name" name="name" required><br>
+    
+    <label for="date">Choose a Date:</label><br>
+    <input type="date" id="date" name="date" required><br><br>
+    
+    <h3>Select UPI App</h3>
+    <div id="upiContainer">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Google_Pay_Logo.svg/800px-Google_Pay_Logo.svg.png" alt="Google Pay" class="upi-logo" onclick="openUPIApp('google')">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/PhonePe-Logo.png/800px-PhonePe-Logo.png" alt="PhonePe" class="upi-logo" onclick="openUPIApp('phonepe')">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Paytm_logo.png/800px-Paytm_logo.png" alt="Paytm" class="upi-logo" onclick="openUPIApp('paytm')">
+    </div>
+  </form>
+
+  <script>
+    function openUPIApp(app) {
+      const name = document.getElementById('name').value;
+      const date = document.getElementById('date').value;
+
+      if (!name || !date) {
+        alert("Please fill in all details!");
+        return;
+      }
+
+      // Assuming payment is successful for demonstration purposes
+      let paymentStatus = "Success";
+
+      // Construct the URL to call the Google Apps Script
+      const url = `https://docs.google.com/spreadsheets/d/1syNquAF1mfwaNCzq1bss1aC1aoGmJlct9iz84T8Esoc/exec?name=${name}&date=${date}&upiApp=${app}&status=${paymentStatus}`;
+      
+      // Send the data to Google Sheets
+      fetch(url)
+        .then(response => response.text())
+        .then(data => {
+          console.log("Payment data recorded:", data);
+          alert("Payment data has been saved successfully!");
+        })
+        .catch(error => console.error('Error:', error));
+
+      // Redirect to UPI payment URL for actual payment
+      let upiURL = "";
+      switch (app) {
+        case "google":
+          upiURL = "upi://pay?pa=yourUPIID@bank&pn=YourMerchantName&am=50.00&cu=INR";
+          break;
+        case "phonepe":
+          upiURL = "upi://pay?pa=yourUPIID@bank&pn=YourMerchantName&am=50.00&cu=INR";
+          break;
+        case "paytm":
+          upiURL = "upi://pay?pa=yourUPIID@bank&pn=YourMerchantName&am=50.00&cu=INR";
+          break;
+      }
+
+      // Redirect to UPI payment
+      window.location.href = upiURL;
+    }
+  </script>
+</body>
+</html>
