@@ -77,7 +77,7 @@
     th, td {
       padding: 8px;
       text-align: left;
-      word-break: break-word; /* Ensure long text wraps */
+      word-break: break-word;
     }
 
     .actions {
@@ -138,11 +138,10 @@
       <input type="text" id="transactionId" name="transactionId" placeholder="Enter your transaction ID">
     </div>
 
-    <!-- UPI Section with Payment Button and Copy Button -->
+    <!-- UPI Section with only Copy Button -->
     <div class="form-group upi-section" id="upiSection">
       <p>Please pay using UPI ID: <strong id="upiIdText">9553950479-3@ybl</strong></p>
       <button type="button" id="copyUpiIdButton">Copy UPI ID</button>
-      <button type="button" id="payUsingUPIButton">Pay Using This UPI</button>
       <p>After payment, please provide the transaction ID below:</p>
       <div class="form-group" id="transactionInputSection">
         <label for="transactionIdUpi">Transaction ID:</label>
@@ -188,7 +187,6 @@
   const paidUsersList = document.getElementById('paidUsersList');
   const form = document.getElementById('paymentForm');
   const showUsersButton = document.getElementById('showUsersButton');
-  const payUsingUPIButton = document.getElementById('payUsingUPIButton');
   const upiIdText = document.getElementById('upiIdText');
   const copyUpiIdButton = document.getElementById('copyUpiIdButton');
   const downloadTextButton = document.getElementById('downloadTextButton');
@@ -202,13 +200,6 @@
       transactionSection.style.display = 'none';
       upiSection.style.display = 'block';
     }
-  });
-
-  // Redirect user to UPI app on button click
-  payUsingUPIButton.addEventListener('click', function() {
-    const upiId = upiIdText.textContent;
-    const upiURL = `upi://pay?pa=${upiId}&pn=YourName&cu=INR`;
-    window.location.href = upiURL; // Redirect to UPI app
   });
 
   // Copy UPI ID to clipboard
@@ -277,18 +268,24 @@
     loadPaidUsers(); // Load users when button is clicked
   });
 
-  // Download paid users list as text file
+  // Download paid users list as a text file
   downloadTextButton.addEventListener('click', function() {
     const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
-    const text = paidUsers.map(user => `Name: ${user.name}, Date: ${user.date}, Transaction ID: ${user.transactionId}`).join('\n');
-    const blob = new Blob([text], { type: 'text/plain' });
+    let textContent = 'Paid Users List:\n\n';
+
+    paidUsers.forEach(user => {
+      textContent += `Name: ${user.name}, Date: ${user.date}, Transaction ID: ${user.transactionId}\n`;
+    });
+
+    const blob = new Blob([textContent], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'paid_users_list.txt';
+    a.download = 'paid_users.txt';
     a.click();
     URL.revokeObjectURL(url);
   });
 </script>
+
 </body>
 </html>
