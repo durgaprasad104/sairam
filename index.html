@@ -3,130 +3,281 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Payment App</title>
+  <title>User Payment Form and Paid Users</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
       margin: 0;
-      background: linear-gradient(to right, #00c6ff, #0072ff);
+      padding: 0;
+      background-color: #f0f0f0;
     }
 
-    #paymentForm {
-      background-color: #fff;
+    .container {
+      width: 60%;
+      margin: 50px auto;
       padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-      text-align: center;
-      width: 320px;
-      animation: fadeIn 1.2s ease-in-out;
+      background-color: white;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.9); }
-      to { opacity: 1; transform: scale(1); }
+    .form-group {
+      margin-bottom: 20px;
     }
 
-    h2, h3 {
-      color: #333;
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
     }
 
-    input[type="text"], input[type="date"] {
-      width: 90%;
-      padding: 10px;
-      margin: 10px 0;
+    input[type="text"], input[type="date"], select {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0;
+      display: inline-block;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 4px;
+      box-sizing: border-box;
     }
 
-    .upi-logo {
-      margin: 10px;
-      width: 60px;
-      height: 60px;
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
       cursor: pointer;
-      transition: transform 0.3s, box-shadow 0.3s;
     }
 
-    .upi-logo:hover {
-      transform: scale(1.2);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-      animation: pulse 0.6s infinite alternate;
+    button:hover {
+      background-color: #45a049;
     }
 
-    @keyframes pulse {
-      to {
-        transform: scale(1.15);
-      }
+    .upi-section, .transaction-section {
+      display: none;
     }
 
-    #upiContainer {
+    .table-section {
+      display: none;
       margin-top: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    table, th, td {
+      border: 1px solid black;
+    }
+
+    th, td {
+      padding: 8px;
+      text-align: left;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    #showUsersButton {
+      background-color: #007bff;
+    }
+
+    #showUsersButton:hover {
+      background-color: #0056b3;
     }
   </style>
 </head>
 <body>
+
+<div class="container" id="formContainer">
+  <h2>User Payment Form</h2>
   <form id="paymentForm">
-    <h2>Enter Your Details</h2>
-    
-    <label for="name">Enter Your Name:</label><br>
-    <input type="text" id="name" name="name" required><br>
-    
-    <label for="date">Choose a Date:</label><br>
-    <input type="date" id="date" name="date" required><br><br>
-    
-    <h3>Select UPI App</h3>
-    <div id="upiContainer">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Google_Pay_Logo.svg/800px-Google_Pay_Logo.svg.png" alt="Google Pay" class="upi-logo" onclick="openUPIApp('google')">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/PhonePe-Logo.png/800px-PhonePe-Logo.png" alt="PhonePe" class="upi-logo" onclick="openUPIApp('phonepe')">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Paytm_logo.png/800px-Paytm_logo.png" alt="Paytm" class="upi-logo" onclick="openUPIApp('paytm')">
+    <div class="form-group">
+      <label for="name">Name:</label>
+      <input type="text" id="name" name="name" required>
+    </div>
+
+    <div class="form-group">
+      <label for="date">Date:</label>
+      <input type="date" id="date" name="date" required>
+    </div>
+
+    <div class="form-group">
+      <label for="paymentStatus">Payment Status:</label>
+      <select id="paymentStatus" name="paymentStatus" required>
+        <option value="">Select payment status</option>
+        <option value="paid">Payment Done</option>
+        <option value="notPaid">Payment Not Done</option>
+      </select>
+    </div>
+
+    <!-- Transaction ID Section -->
+    <div class="form-group transaction-section" id="transactionSection">
+      <label for="transactionId">Transaction ID:</label>
+      <input type="text" id="transactionId" name="transactionId" placeholder="Enter your transaction ID">
+    </div>
+
+    <!-- UPI Section with Payment Button and Copy Button -->
+    <div class="form-group upi-section" id="upiSection">
+      <p>Please pay using UPI ID: <strong id="upiIdText">9553950479-3@ybl</strong></p>
+      <button type="button" id="copyUpiIdButton">Copy UPI ID</button>
+      <button type="button" id="payUsingUPIButton">Pay Using This UPI</button>
+      <p>After payment, please provide the transaction ID below:</p>
+      <div class="form-group" id="transactionInputSection">
+        <label for="transactionIdUpi">Transaction ID:</label>
+        <input type="text" id="transactionIdUpi" name="transactionIdUpi" placeholder="Enter your transaction ID">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="submit">Submit</button>
+      <button type="button" id="showUsersButton">Show Paid Users List</button>
     </div>
   </form>
+</div>
 
-  <script>
-    function openUPIApp(app) {
-      const name = document.getElementById('name').value;
-      const date = document.getElementById('date').value;
+<!-- Paid Users List Section -->
+<div class="container table-section" id="paidUsersContainer">
+  <h2>Paid Users List</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Date</th>
+        <th>Transaction ID</th>
+      </tr>
+    </thead>
+    <tbody id="paidUsersList">
+      <!-- Paid users will be displayed here -->
+    </tbody>
+  </table>
+  <button id="downloadTextButton">Download List as Text File</button>
+</div>
 
-      if (!name || !date) {
-        alert("Please fill in all details!");
-        return;
-      }
+<script>
+  // Get form elements
+  const paymentStatus = document.getElementById('paymentStatus');
+  const transactionSection = document.getElementById('transactionSection');
+  const upiSection = document.getElementById('upiSection');
+  const transactionInputSection = document.getElementById('transactionInputSection');
+  const formContainer = document.getElementById('formContainer');
+  const paidUsersContainer = document.getElementById('paidUsersContainer');
+  const paidUsersList = document.getElementById('paidUsersList');
+  const form = document.getElementById('paymentForm');
+  const showUsersButton = document.getElementById('showUsersButton');
+  const payUsingUPIButton = document.getElementById('payUsingUPIButton');
+  const upiIdText = document.getElementById('upiIdText');
+  const copyUpiIdButton = document.getElementById('copyUpiIdButton');
+  const downloadTextButton = document.getElementById('downloadTextButton');
 
-      // Construct the URL to call the Google Apps Script
-      const url = `https://script.google.com/macros/s/AKfycbwzrJAqfwugYR3kucWX0q57u10YrOcpMtrBOdlE5T2r-9gpZ81QCnQAL_WMqg9wQoTIbA/exec?name=${encodeURIComponent(name)}&date=${encodeURIComponent(date)}&upiApp=${encodeURIComponent(app)}&status=Pending&timestamp=${new Date().toISOString()}`;
-
-      // Redirect to UPI payment URL for actual payment
-      let upiURL = "";
-      switch (app) {
-        case "google":
-          upiURL = "upi://pay?pa=yourUPIID@bank&pn=YourMerchantName&am=50.00&cu=INR";
-          break;
-        case "phonepe":
-          upiURL = "upi://pay?pa=9553950479-3@ybl&pn=DurgaPrasad&am=5.00&cu=INR";
-          break;
-        case "paytm":
-          upiURL = "upi://pay?pa=yourUPIID@bank&pn=YourMerchantName&am=50.00&cu=INR";
-          break;
-      }
-
-      // Open UPI app
-      window.location.href = upiURL;
-
-      // Set a timeout to simulate checking for payment confirmation
-      setTimeout(() => {
-        // Send a follow-up request to update payment status
-        fetch(url.replace('status=Pending', 'status=Completed'))
-          .then(response => response.text())
-          .then(data => {
-            console.log("Payment data updated:", data);
-            alert("Payment status updated successfully!");
-          })
-          .catch(error => console.error('Error:', error));
-      }, 5000); // Adjust timeout if necessary
+  // Toggle sections based on payment status
+  paymentStatus.addEventListener('change', function() {
+    if (this.value === 'paid') {
+      transactionSection.style.display = 'block';
+      upiSection.style.display = 'none';
+    } else if (this.value === 'notPaid') {
+      transactionSection.style.display = 'none';
+      upiSection.style.display = 'block';
     }
-  </script>
+  });
+
+  // Redirect user to UPI app on button click
+  payUsingUPIButton.addEventListener('click', function() {
+    const upiId = upiIdText.textContent;
+    const upiURL = `upi://pay?pa=${upiId}&pn=YourName&cu=INR`;
+    window.location.href = upiURL; // Redirect to UPI app
+  });
+
+  // Copy UPI ID to clipboard
+  copyUpiIdButton.addEventListener('click', function() {
+    navigator.clipboard.writeText(upiIdText.textContent).then(function() {
+      alert('UPI ID copied to clipboard!');
+    }, function() {
+      alert('Failed to copy UPI ID.');
+    });
+  });
+
+  // Load paid users from localStorage
+  function loadPaidUsers() {
+    const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
+    paidUsersList.innerHTML = ''; // Clear existing list
+
+    paidUsers.forEach(user => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${user.name}</td>
+        <td>${user.date}</td>
+        <td>${user.transactionId}</td>
+      `;
+      paidUsersList.appendChild(row);
+    });
+  }
+
+  // Form submission logic
+  form.addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const name = document.getElementById('name').value;
+    const date = document.getElementById('date').value;
+    const transactionId = document.getElementById('transactionId').value.trim() || document.getElementById('transactionIdUpi').value.trim();
+
+    if (paymentStatus.value === 'paid' && transactionId !== '') {
+      // Save user payment to localStorage
+      const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
+      paidUsers.push({ name, date, transactionId });
+      localStorage.setItem('paidUsers', JSON.stringify(paidUsers));
+
+      alert('Payment recorded successfully!');
+      form.reset();
+      transactionSection.style.display = 'none';
+      transactionInputSection.style.display = 'none';
+      paidUsersContainer.style.display = 'block'; // Show the paid users list
+    } else if (paymentStatus.value === 'notPaid' && transactionId !== '') {
+      // Save user payment to localStorage without UPI
+      const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
+      paidUsers.push({ name, date, transactionId });
+      localStorage.setItem('paidUsers', JSON.stringify(paidUsers));
+
+      alert('Payment recorded successfully!');
+      form.reset();
+      transactionSection.style.display = 'none';
+      upiSection.style.display = 'none';
+      paidUsersContainer.style.display = 'block'; // Show the paid users list
+    } else {
+      alert('Please provide the necessary details.');
+    }
+  });
+
+  // Show paid users list on button click
+  showUsersButton.addEventListener('click', function() {
+    paidUsersContainer.style.display = 'block'; // Show the paid users list
+    loadPaidUsers(); // Load the list
+  });
+
+  // Download paid users list as a text file
+  downloadTextButton.addEventListener('click', function() {
+    const rows = Array.from(paidUsersList.querySelectorAll('tr'));
+    let textContent = 'Name\tDate\tTransaction ID\n';
+
+    rows.forEach(row => {
+      const cells = Array.from(row.querySelectorAll('td'));
+      textContent += cells.map(cell => cell.textContent).join('\t') + '\n';
+    });
+
+    const blob = new Blob([textContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'paid_users_list.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+</script>
+
 </body>
 </html>
