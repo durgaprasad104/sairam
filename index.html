@@ -134,6 +134,7 @@
 <div class="container" id="formContainer">
   <h2>User Payment Form</h2>
   <form id="paymentForm">
+    <input type="hidden" id="editIndex" value="">
     <div class="form-group">
       <label for="name">Name:</label>
       <input type="text" id="name" name="name" required>
@@ -232,8 +233,6 @@
 </div>
 
 <script>
-  // JavaScript for handling the form, UPI payment, and paid users list
-
   const paymentStatus = document.getElementById('paymentStatus');
   const transactionSection = document.getElementById('transactionSection');
   const upiSection = document.getElementById('upiSection');
@@ -249,6 +248,7 @@
   const loginForm = document.getElementById('loginForm');
   const adminInputs = document.getElementById('adminInputs');
   const showAdminLoginButton = document.getElementById('showAdminLoginButton');
+  const editIndexField = document.getElementById('editIndex');
   let isAdmin = false;
 
   // Toggle sections based on payment status
@@ -266,15 +266,14 @@
   copyUpiIdButton.addEventListener('click', function() {
     navigator.clipboard.writeText(upiIdText.textContent).then(function() {
       alert('UPI ID copied to clipboard!');
-    }, function() {
-      alert('Failed to copy UPI ID.');
     });
   });
 
-  // Load paid users from localStorage
+  // Load Paid Users from localStorage
   function loadPaidUsers() {
     const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
     paidUsersList.innerHTML = '';
+
     paidUsers.forEach((user, index) => {
       const row = document.createElement('tr');
       row.innerHTML = `
@@ -329,13 +328,11 @@
 
     document.getElementById('name').value = user.name;
     document.getElementById('date').value = user.date;
-    document.getElementById('transactionId').value = user.transactionId;
+    document.getElementById('paymentStatus').value = user.paymentStatus || 'notPaid';
+    document.getElementById('transactionId').value = user.transactionId || '';
 
-    paidUsers.splice(index, 1); // Remove the user from the list
-    localStorage.setItem('paidUsers', JSON.stringify(paidUsers));
-
-    // Update the list
-    loadPaidUsers();
+    editIndexField.value = index; // Set the index of the user being edited
+    paymentStatus.dispatchEvent(new Event('change')); // Trigger change to show/hide sections correctly
   }
 
   // Function to handle deleting a user
@@ -354,19 +351,33 @@
 
     const name = document.getElementById('name').value;
     const date = document.getElementById('date').value;
-    const paymentStatus = document.getElementById('paymentStatus').value;
+    const paymentStatusValue = document.getElementById('paymentStatus').value;
     const transactionId = document.getElementById('transactionId').value || document.getElementById('transactionIdUpi').value;
+    const index = editIndexField.value;
+
+    // Check for valid transaction ID if payment is not done
+    if (paymentStatusValue === 'notPaid' && !transactionId) {
+      alert('Please provide the transaction ID to complete the payment.');
+      return;
+    }
 
     const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
 
-    if (paymentStatus === 'paid') {
-      paidUsers.push({ name, date, transactionId });
-      localStorage.setItem('paidUsers', JSON.stringify(paidUsers));
-      alert('Payment details saved successfully!');
-      form.reset();
-    } else if (paymentStatus === 'notPaid') {
-      alert('Please make the payment to proceed.');
+    if (index !== '') {
+      // Edit existing user
+      paidUsers[index] = { name, date, paymentStatus: paymentStatusValue, transactionId };
+    } else {
+      // Add new user
+      paidUsers.push({ name, date, paymentStatus: paymentStatusValue, transactionId });
     }
+
+    localStorage.setItem('paidUsers', JSON.stringify(paidUsers));
+    alert('Payment details saved successfully!');
+    form.reset();
+    transactionSection.style.display = 'none';
+    upiSection.style.display = 'none';
+    editIndexField.value = ''; // Clear the index field after saving
+    loadPaidUsers(); // Refresh the list
   });
 
   // Download the list as a text file
