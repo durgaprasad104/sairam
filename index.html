@@ -106,6 +106,27 @@
         margin-top: 10px;
       }
     }
+
+    .login-section {
+      display: none;
+    }
+
+    .edit-delete-buttons {
+      display: none;
+    }
+
+    .edit-delete-buttons.visible {
+      display: inline-block;
+    }
+
+    .admin-inputs {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .admin-inputs.visible {
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -156,6 +177,36 @@
   </form>
 </div>
 
+<!-- Admin Login Section -->
+<div class="container login-section" id="loginContainer">
+  <h2>Admin Login</h2>
+  <form id="loginForm">
+    <div class="form-group">
+      <label for="username">Username:</label>
+      <input type="text" id="username" required>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password:</label>
+      <input type="password" id="password" required>
+    </div>
+
+    <button type="submit">Login</button>
+  </form>
+
+  <!-- Admin Input Fields (hidden initially) -->
+  <div class="admin-inputs" id="adminInputs">
+    <div class="form-group">
+      <label for="additionalInfo">Additional Info:</label>
+      <input type="text" id="additionalInfo" name="additionalInfo">
+    </div>
+    <div class="form-group">
+      <label for="adminNote">Admin Note:</label>
+      <input type="text" id="adminNote" name="adminNote">
+    </div>
+  </div>
+</div>
+
 <!-- Paid Users List Section -->
 <div class="container table-section" id="paidUsersContainer">
   <h2>Paid Users List</h2>
@@ -165,6 +216,7 @@
         <th>Name</th>
         <th>Date</th>
         <th>Transaction ID</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody id="paidUsersList">
@@ -174,14 +226,17 @@
   <button id="downloadTextButton">Download List as Text File</button>
 </div>
 
+<!-- Show Admin Login Button -->
+<div class="container">
+  <button id="showAdminLoginButton">Admin Login</button>
+</div>
+
 <script>
   // JavaScript for handling the form, UPI payment, and paid users list
 
-  // Get form elements
   const paymentStatus = document.getElementById('paymentStatus');
   const transactionSection = document.getElementById('transactionSection');
   const upiSection = document.getElementById('upiSection');
-  const transactionInputSection = document.getElementById('transactionInputSection');
   const formContainer = document.getElementById('formContainer');
   const paidUsersContainer = document.getElementById('paidUsersContainer');
   const paidUsersList = document.getElementById('paidUsersList');
@@ -190,6 +245,11 @@
   const upiIdText = document.getElementById('upiIdText');
   const copyUpiIdButton = document.getElementById('copyUpiIdButton');
   const downloadTextButton = document.getElementById('downloadTextButton');
+  const loginContainer = document.getElementById('loginContainer');
+  const loginForm = document.getElementById('loginForm');
+  const adminInputs = document.getElementById('adminInputs');
+  const showAdminLoginButton = document.getElementById('showAdminLoginButton');
+  let isAdmin = false;
 
   // Toggle sections based on payment status
   paymentStatus.addEventListener('change', function() {
@@ -214,79 +274,117 @@
   // Load paid users from localStorage
   function loadPaidUsers() {
     const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
-    paidUsersList.innerHTML = ''; // Clear existing list
-
-    paidUsers.forEach(user => {
+    paidUsersList.innerHTML = '';
+    paidUsers.forEach((user, index) => {
       const row = document.createElement('tr');
       row.innerHTML = `
         <td>${user.name}</td>
         <td>${user.date}</td>
         <td>${user.transactionId}</td>
+        <td class="edit-delete-buttons ${isAdmin ? 'visible' : ''}">
+          <button onclick="editUser(${index})">Edit</button>
+          <button onclick="deleteUser(${index})">Delete</button>
+        </td>
       `;
       paidUsersList.appendChild(row);
     });
   }
 
-  // Form submission logic
+  // Show/Hide Paid Users List
+  showUsersButton.addEventListener('click', function() {
+    if (paidUsersContainer.style.display === 'none' || paidUsersContainer.style.display === '') {
+      loadPaidUsers();
+      paidUsersContainer.style.display = 'block';
+    } else {
+      paidUsersContainer.style.display = 'none';
+    }
+  });
+
+  // Show/Hide Admin Login Section
+  showAdminLoginButton.addEventListener('click', function() {
+    loginContainer.style.display = loginContainer.style.display === 'none' || loginContainer.style.display === '' ? 'block' : 'none';
+  });
+
+  // Admin Login Handling
+  loginForm.addEventListener('submit', function(event) {
+    event.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    // Simple authentication check (replace with actual authentication logic)
+    if (username === 'admin' && password === 'password') {
+      loginContainer.style.display = 'none';
+      adminInputs.classList.add('visible');
+      isAdmin = true;
+      loadPaidUsers(); // Refresh the list to show edit/delete buttons
+    } else {
+      alert('Invalid username or password');
+    }
+  });
+
+  // Function to handle editing a user
+  function editUser(index) {
+    const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
+    const user = paidUsers[index];
+
+    document.getElementById('name').value = user.name;
+    document.getElementById('date').value = user.date;
+    document.getElementById('transactionId').value = user.transactionId;
+
+    paidUsers.splice(index, 1); // Remove the user from the list
+    localStorage.setItem('paidUsers', JSON.stringify(paidUsers));
+
+    // Update the list
+    loadPaidUsers();
+  }
+
+  // Function to handle deleting a user
+  function deleteUser(index) {
+    const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
+    paidUsers.splice(index, 1); // Remove the user from the list
+    localStorage.setItem('paidUsers', JSON.stringify(paidUsers));
+
+    // Update the list
+    loadPaidUsers();
+  }
+
+  // Handle form submission
   form.addEventListener('submit', function(event) {
     event.preventDefault();
 
     const name = document.getElementById('name').value;
     const date = document.getElementById('date').value;
-    const transactionId = document.getElementById('transactionId').value.trim() || document.getElementById('transactionIdUpi').value.trim();
+    const paymentStatus = document.getElementById('paymentStatus').value;
+    const transactionId = document.getElementById('transactionId').value || document.getElementById('transactionIdUpi').value;
 
-    if (paymentStatus.value === 'paid' && transactionId !== '') {
-      // Save user payment to localStorage
-      const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
+    const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
+
+    if (paymentStatus === 'paid') {
       paidUsers.push({ name, date, transactionId });
       localStorage.setItem('paidUsers', JSON.stringify(paidUsers));
-
-      alert('Payment recorded successfully!');
+      alert('Payment details saved successfully!');
       form.reset();
-      transactionSection.style.display = 'none';
-      transactionInputSection.style.display = 'none';
-      paidUsersContainer.style.display = 'block'; // Show the paid users list
-    } else if (paymentStatus.value === 'notPaid' && transactionId !== '') {
-      // Save user payment to localStorage
-      const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
-      paidUsers.push({ name, date, transactionId });
-      localStorage.setItem('paidUsers', JSON.stringify(paidUsers));
-
-      alert('Payment recorded successfully!');
-      form.reset();
-      transactionSection.style.display = 'none';
-      upiSection.style.display = 'none';
-      paidUsersContainer.style.display = 'block'; // Show the paid users list
-    } else {
-      alert('Please provide required information.');
+    } else if (paymentStatus === 'notPaid') {
+      alert('Please make the payment to proceed.');
     }
   });
 
-  // Show paid users list
-  showUsersButton.addEventListener('click', function() {
-    paidUsersContainer.style.display = 'block';
-    loadPaidUsers(); // Load users when button is clicked
-  });
-
-  // Download paid users list as a text file
+  // Download the list as a text file
   downloadTextButton.addEventListener('click', function() {
     const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
-    let textContent = 'Paid Users List:\n\n';
+    let textContent = 'Name, Date, Transaction ID\n';
 
     paidUsers.forEach(user => {
-      textContent += `Name: ${user.name}, Date: ${user.date}, Transaction ID: ${user.transactionId}\n`;
+      textContent += `${user.name}, ${user.date}, ${user.transactionId}\n`;
     });
 
     const blob = new Blob([textContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'paid_users.txt';
-    a.click();
-    URL.revokeObjectURL(url);
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'paid_users_list.txt';
+    link.click();
   });
 </script>
 
 </body>
-  
 </html>
