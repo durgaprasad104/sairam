@@ -41,6 +41,15 @@
       box-sizing: border-box;
     }
 
+    input[type="password"] {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
     button {
       background-color: #4CAF50;
       color: white;
@@ -127,6 +136,23 @@
     .admin-inputs.visible {
       display: block;
     }
+
+    .filter-section {
+      margin-bottom: 20px;
+    }
+
+    #backToFormButton {
+      background-color: #007bff;
+    }
+
+    #backToFormButton:hover {
+      background-color: #0056b3;
+    }
+
+    .back-button {
+      display: block;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -160,7 +186,7 @@
       <input type="text" id="transactionId" name="transactionId" placeholder="Enter your transaction ID">
     </div>
 
-    <!-- UPI Section with only Copy Button -->
+    <!-- UPI Section -->
     <div class="form-group upi-section" id="upiSection">
       <p>Please pay using UPI ID: <strong id="upiIdText">9553950479-3@ybl</strong></p>
       <button type="button" id="copyUpiIdButton">Copy UPI ID</button>
@@ -193,6 +219,7 @@
     </div>
 
     <button type="submit">Login</button>
+    <button type="button" id="backToFormButton" class="back-button">Back to Form</button>
   </form>
 
   <!-- Admin Input Fields (hidden initially) -->
@@ -211,6 +238,36 @@
 <!-- Paid Users List Section -->
 <div class="container table-section" id="paidUsersContainer">
   <h2>Paid Users List</h2>
+  
+  <!-- Filter Section -->
+  <div class="filter-section">
+    <div class="form-group">
+      <label for="monthFilter">Month:</label>
+      <select id="monthFilter">
+        <option value="">Select Month</option>
+        <option value="01">January</option>
+        <option value="02">February</option>
+        <option value="03">March</option>
+        <option value="04">April</option>
+        <option value="05">May</option>
+        <option value="06">June</option>
+        <option value="07">July</option>
+        <option value="08">August</option>
+        <option value="09">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="yearFilter">Year:</label>
+      <select id="yearFilter">
+        <!-- Dynamically generate year options -->
+      </select>
+    </div>
+    <button id="applyFilterButton">Apply Filter</button>
+  </div>
+
   <table>
     <thead>
       <tr>
@@ -225,6 +282,7 @@
     </tbody>
   </table>
   <button id="downloadTextButton">Download List as Text File</button>
+  <button type="button" id="backToFormButtonList" class="back-button">Back to Form</button>
 </div>
 
 <!-- Show Admin Login Button -->
@@ -233,168 +291,208 @@
 </div>
 
 <script>
+  const form = document.getElementById('paymentForm');
   const paymentStatus = document.getElementById('paymentStatus');
   const transactionSection = document.getElementById('transactionSection');
   const upiSection = document.getElementById('upiSection');
+  const transactionInputSection = document.getElementById('transactionInputSection');
   const formContainer = document.getElementById('formContainer');
   const paidUsersContainer = document.getElementById('paidUsersContainer');
-  const paidUsersList = document.getElementById('paidUsersList');
-  const form = document.getElementById('paymentForm');
+  const loginContainer = document.getElementById('loginContainer');
   const showUsersButton = document.getElementById('showUsersButton');
-  const upiIdText = document.getElementById('upiIdText');
   const copyUpiIdButton = document.getElementById('copyUpiIdButton');
   const downloadTextButton = document.getElementById('downloadTextButton');
-  const loginContainer = document.getElementById('loginContainer');
-  const loginForm = document.getElementById('loginForm');
+  const monthFilter = document.getElementById('monthFilter');
+  const yearFilter = document.getElementById('yearFilter');
+  const applyFilterButton = document.getElementById('applyFilterButton');
+  const backToFormButton = document.getElementById('backToFormButton');
+  const backToFormButtonList = document.getElementById('backToFormButtonList');
   const adminInputs = document.getElementById('adminInputs');
-  const showAdminLoginButton = document.getElementById('showAdminLoginButton');
-  const editIndexField = document.getElementById('editIndex');
+  const transactionIdInputSection = document.getElementById('transactionInputSection');
+
   let isAdmin = false;
 
-  // Toggle sections based on payment status
-  paymentStatus.addEventListener('change', function() {
-    if (this.value === 'paid') {
-      transactionSection.style.display = 'block';
-      upiSection.style.display = 'none';
-    } else if (this.value === 'notPaid') {
-      transactionSection.style.display = 'none';
-      upiSection.style.display = 'block';
-    }
+  // Show the admin login section
+  document.getElementById('showAdminLoginButton').addEventListener('click', () => {
+    formContainer.style.display = 'none';
+    paidUsersContainer.style.display = 'none';
+    loginContainer.style.display = 'block';
   });
 
-  // Copy UPI ID to clipboard
-  copyUpiIdButton.addEventListener('click', function() {
-    navigator.clipboard.writeText(upiIdText.textContent).then(function() {
-      alert('UPI ID copied to clipboard!');
-    });
-  });
-
-  // Load Paid Users from localStorage
-  function loadPaidUsers() {
-    const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
-    paidUsersList.innerHTML = '';
-
-    paidUsers.forEach((user, index) => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${user.name}</td>
-        <td>${user.date}</td>
-        <td>${user.transactionId}</td>
-        <td class="edit-delete-buttons ${isAdmin ? 'visible' : ''}">
-          <button onclick="editUser(${index})">Edit</button>
-          <button onclick="deleteUser(${index})">Delete</button>
-        </td>
-      `;
-      paidUsersList.appendChild(row);
-    });
-  }
-
-  // Show/Hide Paid Users List
-  showUsersButton.addEventListener('click', function() {
-    if (paidUsersContainer.style.display === 'none' || paidUsersContainer.style.display === '') {
-      loadPaidUsers();
-      paidUsersContainer.style.display = 'block';
-    } else {
-      paidUsersContainer.style.display = 'none';
-    }
-  });
-
-  // Show/Hide Admin Login Section
-  showAdminLoginButton.addEventListener('click', function() {
-    loginContainer.style.display = loginContainer.style.display === 'none' || loginContainer.style.display === '' ? 'block' : 'none';
-  });
-
-  // Admin Login Handling
-  loginForm.addEventListener('submit', function(event) {
-    event.preventDefault();
+  // Handle admin login
+  document.getElementById('loginForm').addEventListener('submit', (e) => {
+    e.preventDefault();
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
-    // Simple authentication check (replace with actual authentication logic)
-    if (username === 'admin' && password === 'password') {
-      loginContainer.style.display = 'none';
-      adminInputs.classList.add('visible');
+    if (username === 'admin' && password === 'password') { // Replace with your actual admin check
       isAdmin = true;
-      loadPaidUsers(); // Refresh the list to show edit/delete buttons
+      loginContainer.style.display = 'none';
+      formContainer.style.display = 'none';
+      paidUsersContainer.style.display = 'block';
+      adminInputs.classList.add('visible');
     } else {
       alert('Invalid username or password');
     }
   });
 
-  // Function to handle editing a user
-  function editUser(index) {
-    const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
-    const user = paidUsers[index];
-
-    document.getElementById('name').value = user.name;
-    document.getElementById('date').value = user.date;
-    document.getElementById('paymentStatus').value = user.paymentStatus || 'notPaid';
-    document.getElementById('transactionId').value = user.transactionId || '';
-
-    editIndexField.value = index; // Set the index of the user being edited
-    paymentStatus.dispatchEvent(new Event('change')); // Trigger change to show/hide sections correctly
-  }
-
-  // Function to handle deleting a user
-  function deleteUser(index) {
-    const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
-    paidUsers.splice(index, 1); // Remove the user from the list
-    localStorage.setItem('paidUsers', JSON.stringify(paidUsers));
-
-    // Update the list
-    loadPaidUsers();
-  }
-
-  // Handle form submission
-  form.addEventListener('submit', function(event) {
-    event.preventDefault();
-
-    const name = document.getElementById('name').value;
-    const date = document.getElementById('date').value;
-    const paymentStatusValue = document.getElementById('paymentStatus').value;
-    const transactionId = document.getElementById('transactionId').value || document.getElementById('transactionIdUpi').value;
-    const index = editIndexField.value;
-
-    // Check for valid transaction ID if payment is not done
-    if (paymentStatusValue === 'notPaid' && !transactionId) {
-      alert('Please provide the transaction ID to complete the payment.');
-      return;
+  // Show or hide sections based on payment status
+  paymentStatus.addEventListener('change', () => {
+    if (paymentStatus.value === 'paid') {
+      upiSection.style.display = 'none';
+      transactionSection.style.display = 'block';
+      transactionInputSection.style.display = 'none';
+    } else if (paymentStatus.value === 'notPaid') {
+      upiSection.style.display = 'block';
+      transactionSection.style.display = 'none';
+      transactionInputSection.style.display = 'block';
     }
-
-    const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
-
-    if (index !== '') {
-      // Edit existing user
-      paidUsers[index] = { name, date, paymentStatus: paymentStatusValue, transactionId };
-    } else {
-      // Add new user
-      paidUsers.push({ name, date, paymentStatus: paymentStatusValue, transactionId });
-    }
-
-    localStorage.setItem('paidUsers', JSON.stringify(paidUsers));
-    alert('Payment details saved successfully!');
-    form.reset();
-    transactionSection.style.display = 'none';
-    upiSection.style.display = 'none';
-    editIndexField.value = ''; // Clear the index field after saving
-    loadPaidUsers(); // Refresh the list
   });
 
-  // Download the list as a text file
-  downloadTextButton.addEventListener('click', function() {
+  // Handle form submission
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const date = document.getElementById('date').value;
+    const status = paymentStatus.value;
+    const transactionId = status === 'paid' ? document.getElementById('transactionId').value : document.getElementById('transactionIdUpi').value;
+
+    const newUser = {
+      name,
+      date,
+      transactionId,
+      status,
+    };
+
     const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
-    let textContent = 'Name, Date, Transaction ID\n';
+    paidUsers.push(newUser);
+    localStorage.setItem('paidUsers', JSON.stringify(paidUsers));
+
+    alert('User information saved successfully');
+    form.reset();
+    upiSection.style.display = 'none';
+    transactionSection.style.display = 'none';
+    transactionInputSection.style.display = 'none';
+  });
+
+  // Show paid users list
+  showUsersButton.addEventListener('click', () => {
+    formContainer.style.display = 'none';
+    paidUsersContainer.style.display = 'block';
+    loginContainer.style.display = 'none';
+    loadPaidUsers();
+  });
+
+  // Copy UPI ID to clipboard
+  copyUpiIdButton.addEventListener('click', () => {
+    navigator.clipboard.writeText(document.getElementById('upiIdText').textContent)
+      .then(() => alert('UPI ID copied to clipboard'))
+      .catch(err => alert('Failed to copy UPI ID'));
+  });
+
+  // Download list as text file
+  downloadTextButton.addEventListener('click', () => {
+    const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
+    let textContent = 'Name, Date, Transaction ID, Status\n';
 
     paidUsers.forEach(user => {
-      textContent += `${user.name}, ${user.date}, ${user.transactionId}\n`;
+      textContent += `${user.name}, ${user.date}, ${user.transactionId}, ${user.status}\n`;
     });
 
     const blob = new Blob([textContent], { type: 'text/plain' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'paid_users_list.txt';
-    link.click();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'paid_users_list.txt';
+    a.click();
+    URL.revokeObjectURL(url);
   });
+
+  // Load paid users
+  function loadPaidUsers() {
+    const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
+    const selectedMonth = monthFilter.value;
+    const selectedYear = yearFilter.value;
+
+    // Clear existing table rows
+    document.getElementById('paidUsersList').innerHTML = '';
+
+    // Filter users based on selected month and year
+    paidUsers.forEach((user, index) => {
+      const userDate = new Date(user.date);
+      const userMonth = String(userDate.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+      const userYear = userDate.getFullYear();
+
+      if ((selectedMonth === '' || selectedMonth === userMonth) &&
+          (selectedYear === '' || selectedYear == userYear)) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${user.name}</td>
+          <td>${user.date}</td>
+          <td>${user.transactionId}</td>
+          <td class="edit-delete-buttons ${isAdmin ? 'visible' : ''}">
+            <button onclick="editUser(${index})">Edit</button>
+            <button onclick="deleteUser(${index})">Delete</button>
+          </td>
+        `;
+        document.getElementById('paidUsersList').appendChild(row);
+      }
+    });
+  }
+
+  // Populate year filter dynamically
+  function populateYearFilter() {
+    const currentYear = new Date().getFullYear();
+    for (let year = currentYear; year >= 2000; year--) {
+      const option = document.createElement('option');
+      option.value = year;
+      option.textContent = year;
+      yearFilter.appendChild(option);
+    }
+  }
+  populateYearFilter();
+
+  // Apply filter button click event
+  applyFilterButton.addEventListener('click', () => {
+    loadPaidUsers();
+  });
+
+  // Back to form button click event (in admin login section)
+  backToFormButton.addEventListener('click', () => {
+    formContainer.style.display = 'block';
+    paidUsersContainer.style.display = 'none';
+    loginContainer.style.display = 'none';
+  });
+
+  // Back to form button click event (in paid users section)
+  backToFormButtonList.addEventListener('click', () => {
+    formContainer.style.display = 'block';
+    paidUsersContainer.style.display = 'none';
+  });
+
+  // Edit user function
+  function editUser(index) {
+    const paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
+    const user = paidUsers[index];
+    
+    document.getElementById('name').value = user.name;
+    document.getElementById('date').value = user.date;
+    document.getElementById('paymentStatus').value = user.status;
+    document.getElementById('transactionId').value = user.status === 'paid' ? user.transactionId : '';
+    document.getElementById('transactionIdUpi').value = user.status === 'notPaid' ? user.transactionId : '';
+
+    document.getElementById('editIndex').value = index;
+    formContainer.style.display = 'block';
+    paidUsersContainer.style.display = 'none';
+  }
+
+  // Delete user function
+  function deleteUser(index) {
+    let paidUsers = JSON.parse(localStorage.getItem('paidUsers')) || [];
+    paidUsers.splice(index, 1);
+    localStorage.setItem('paidUsers', JSON.stringify(paidUsers));
+    loadPaidUsers();
+  }
 </script>
 
 </body>
