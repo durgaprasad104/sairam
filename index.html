@@ -399,10 +399,17 @@
 document.getElementById('payWithPhonePeLink').addEventListener('click', (event) => {
   event.preventDefault(); // Prevent the default anchor behavior
   const upiId = document.getElementById('upiIdText').textContent;
-  const upiLink = `upi://pay?pa=${upiId}`;
+  const upiLink = `upi://pay?pa=${upiId}`; // This is the standard UPI link
 
-  window.open(upiLink, '_blank');
+  // Open in a browser as a fallback
+  const fallbackLink = `https://upi.payment.url/?pa=${upiId}`; // This is a placeholder
+
+  window.open(upiLink, '_blank').catch(() => {
+    // Fallback if the direct link doesn't work
+    window.open(fallbackLink, '_blank');
+  });
 });
+
 
 
 
