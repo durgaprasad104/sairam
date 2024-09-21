@@ -395,19 +395,12 @@
       .catch(err => alert('Failed to copy UPI ID'));
   });
 
-// Pay with PhonePe icon click event
-document.getElementById('payWithPhonePeLink').addEventListener('click', (event) => {
-  event.preventDefault(); // Prevent the default anchor behavior
+// Pay with PhonePe button click event
+document.getElementById('payWithPhonePeButton').addEventListener('click', () => {
   const upiId = document.getElementById('upiIdText').textContent;
-  const upiLink = `upi://pay?pa=${upiId}`; // This is the standard UPI link
+  const upiLink = `upi://pay?pa=${upiId}`;
 
-  // Open in a browser as a fallback
-  const fallbackLink = `https://upi.payment.url/?pa=${upiId}`; // This is a placeholder
-
-  window.open(upiLink, '_blank').catch(() => {
-    // Fallback if the direct link doesn't work
-    window.open(fallbackLink, '_blank');
-  });
+  window.open(upiLink, '_blank');
 });
 
 
