@@ -400,7 +400,7 @@ document.getElementById('payWithPhonePeLink').addEventListener('click', (event) 
   event.preventDefault(); // Prevent the default anchor behavior
   
   // Directly open the PhonePe app or fallback to the payment page
-  const upiLink = `upi://pay`; // This attempts to open the UPI app
+ 
   const fallbackLink = `https://www.phonepe.com/pay`; // Fallback link to PhonePe's payment page
 
   // Attempt to open the UPI link, with a fallback
