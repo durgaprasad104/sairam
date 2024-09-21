@@ -402,7 +402,7 @@ document.getElementById('payWithPhonePeLink').addEventListener('click', (event) 
   const upiLink = `upi://pay?pa=${upiId}`; // This is the standard UPI link
 
   // Open in a browser as a fallback
-  const fallbackLink = `https://www.phonepe.com/pay?pa=`; // This is a placeholder
+  const fallbackLink = "https://www.phonepe.com/pay?pa="; // This is a placeholder
 
   window.open(upiLink, '_blank').catch(() => {
     // Fallback if the direct link doesn't work
