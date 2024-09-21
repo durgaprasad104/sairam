@@ -190,13 +190,16 @@
 <div class="form-group upi-section" id="upiSection">
   <p>Please pay using UPI ID: <strong id="upiIdText">9553950479-3@ybl</strong></p>
   <button type="button" id="copyUpiIdButton">Copy UPI ID</button>
-  <button type="button" id="payWithPhonePeButton">Pay with PhonePe</button>
+  <a href="#" id="payWithPhonePeLink">
+    <img src="./images/phonepe icon.png" alt="Pay with PhonePe" id="phonePeIcon" style="cursor: pointer; width: 50px; height: 50px;">
+  </a>
   <p>After payment, please provide the transaction ID below:</p>
   <div class="form-group" id="transactionInputSection">
     <label for="transactionIdUpi">Transaction ID:</label>
     <input type="text" id="transactionIdUpi" name="transactionIdUpi" placeholder="Enter your transaction ID">
   </div>
 </div>
+
 
 
     <div class="actions">
@@ -392,13 +395,15 @@
       .catch(err => alert('Failed to copy UPI ID'));
   });
 
-  // Pay with PhonePe button click event
-document.getElementById('payWithPhonePeButton').addEventListener('click', () => {
+ // Pay with PhonePe icon click event
+document.getElementById('payWithPhonePeLink').addEventListener('click', (event) => {
+  event.preventDefault(); // Prevent the default anchor behavior
   const upiId = document.getElementById('upiIdText').textContent;
   const upiLink = `upi://pay?pa=${upiId}`;
 
   window.open(upiLink, '_blank');
 });
+
 
 
 
