@@ -398,14 +398,16 @@
 // Pay with PhonePe icon click event
 document.getElementById('payWithPhonePeLink').addEventListener('click', (event) => {
   event.preventDefault(); // Prevent the default anchor behavior
+  
+  // Directly open the PhonePe app or fallback to the payment page
+  const upiLink = `upi://pay`; // This attempts to open the UPI app
+  const fallbackLink = `https://www.phonepe.com/pay`; // Fallback link to PhonePe's payment page
 
-  // Fallback link to open PhonePe's payment page
-  const fallbackLink = `https://www.phonepe.com/pay`;
-
-  // Attempt to open the fallback link
-  window.open(fallbackLink, '_blank');
+  // Attempt to open the UPI link, with a fallback
+  window.open(upiLink, '_blank').catch(() => {
+    window.open(fallbackLink, '_blank');
+  });
 });
-
 
 
 
