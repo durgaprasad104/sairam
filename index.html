@@ -187,15 +187,17 @@
     </div>
 
     <!-- UPI Section -->
-    <div class="form-group upi-section" id="upiSection">
-      <p>Please pay using UPI ID: <strong id="upiIdText">9553950479-3@ybl</strong></p>
-      <button type="button" id="copyUpiIdButton">Copy UPI ID</button>
-      <p>After payment, please provide the transaction ID below:</p>
-      <div class="form-group" id="transactionInputSection">
-        <label for="transactionIdUpi">Transaction ID:</label>
-        <input type="text" id="transactionIdUpi" name="transactionIdUpi" placeholder="Enter your transaction ID">
-      </div>
-    </div>
+<div class="form-group upi-section" id="upiSection">
+  <p>Please pay using UPI ID: <strong id="upiIdText">9553950479-3@ybl</strong></p>
+  <button type="button" id="copyUpiIdButton">Copy UPI ID</button>
+  <button type="button" id="payWithPhonePeButton">Pay with PhonePe</button>
+  <p>After payment, please provide the transaction ID below:</p>
+  <div class="form-group" id="transactionInputSection">
+    <label for="transactionIdUpi">Transaction ID:</label>
+    <input type="text" id="transactionIdUpi" name="transactionIdUpi" placeholder="Enter your transaction ID">
+  </div>
+</div>
+
 
     <div class="actions">
       <button type="submit">Submit</button>
@@ -389,6 +391,16 @@
       .then(() => alert('UPI ID copied to clipboard'))
       .catch(err => alert('Failed to copy UPI ID'));
   });
+
+  // Pay with PhonePe button click event
+document.getElementById('payWithPhonePeButton').addEventListener('click', () => {
+  const upiId = document.getElementById('upiIdText').textContent;
+  const upiLink = `upi://pay?pa=${upiId}`;
+
+  window.open(upiLink, '_blank');
+});
+
+
 
   // Download list as text file
   downloadTextButton.addEventListener('click', () => {
