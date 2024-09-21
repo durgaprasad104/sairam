@@ -313,7 +313,6 @@
   const backToFormButton = document.getElementById('backToFormButton');
   const backToFormButtonList = document.getElementById('backToFormButtonList');
   const adminInputs = document.getElementById('adminInputs');
-  const transactionIdInputSection = document.getElementById('transactionInputSection');
 
   let isAdmin = false;
 
@@ -330,7 +329,7 @@
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
-    if (username === 'admin' && password === 'password') { // Replace with your actual admin check
+    if (username === 'admin' && password === 'password') {
       isAdmin = true;
       loginContainer.style.display = 'none';
       formContainer.style.display = 'none';
@@ -394,19 +393,6 @@
       .then(() => alert('UPI ID copied to clipboard'))
       .catch(err => alert('Failed to copy UPI ID'));
   });
-
-// Pay with PhonePe button click event
-document.getElementById('payWithPhonePeButton').addEventListener('click', () => {
-  const upiId = document.getElementById('upiIdText').textContent;
-  const upiLink = `upi://pay?pa=${upiId}`;
-
-  window.open(upiLink, '_blank');
-});
-
-
-
-
-
 
   // Download list as text file
   downloadTextButton.addEventListener('click', () => {
@@ -511,7 +497,16 @@ document.getElementById('payWithPhonePeButton').addEventListener('click', () => 
     localStorage.setItem('paidUsers', JSON.stringify(paidUsers));
     loadPaidUsers();
   }
+   // Pay with PhonePe button click event
+   document.getElementById('payWithPhonePeButton').addEventListener('click', () => {
+    const upiId = document.getElementById('upiIdText').textContent;
+    const upiLink = `upi://pay?pa=${upiId}`;
+
+    window.open(upiLink, '_blank');
+   });
 </script>
+
+
 
 </body>
 </html>
